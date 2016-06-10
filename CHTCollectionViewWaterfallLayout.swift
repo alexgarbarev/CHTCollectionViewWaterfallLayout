@@ -162,6 +162,7 @@ public class CHTCollectionViewWaterfallLayout : UICollectionViewLayout{
         self.columnHeights.removeAllObjects()
         self.allItemAttributes.removeAllObjects()
         self.sectionItemAttributes.removeAllObjects()
+        self.lastYOffset = nil
         
         for section in 0 ..< numberOfSections {
             let columnCount = self.columnCountForSection(section)
