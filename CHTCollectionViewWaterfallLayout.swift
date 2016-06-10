@@ -40,6 +40,16 @@ public class CHTCollectionViewWaterfallLayout : UICollectionViewLayout{
     let CHTCollectionElementKindSectionHeader = "CHTCollectionElementKindSectionHeader"
     let CHTCollectionElementKindSectionFooter = "CHTCollectionElementKindSectionFooter"
     
+    public var staggerHeight : CGFloat{
+    didSet{
+        invalidateLayout()
+    }}
+    
+    public var staggerThreshold : CGFloat{
+    didSet{
+        invalidateLayout()
+    }}
+    
     public var columnCount : NSInteger{
     didSet{
         invalidateLayout()
@@ -89,6 +99,7 @@ public class CHTCollectionViewWaterfallLayout : UICollectionViewLayout{
     private var footersAttributes : NSMutableDictionary
     private  var unionRects : NSMutableArray
     private let unionSize = 20
+    private var lastYOffset: CGFloat? = nil
     
     override public init(){
         self.headerHeight = 0.0
@@ -96,6 +107,8 @@ public class CHTCollectionViewWaterfallLayout : UICollectionViewLayout{
         self.columnCount = 2
         self.minimumInteritemSpacing = 10
         self.minimumColumnSpacing = 10
+        self.staggerHeight = 0
+        self.staggerThreshold = 40
         self.sectionInset = UIEdgeInsetsZero
         self.itemRenderDirection =
         CHTCollectionViewWaterfallLayoutItemRenderDirection.CHTCollectionViewWaterfallLayoutItemRenderDirectionShortestFirst
@@ -211,32 +224,36 @@ public class CHTCollectionViewWaterfallLayout : UICollectionViewLayout{
             }
             
             /*
-            * 3. Section items
-            */
+             * 3. Section items
+             */
             let itemCount = self.collectionView!.numberOfItemsInSection(section)
             let itemAttributes = NSMutableArray(capacity: itemCount)
-
+            
             // Item will be put into shortest column.
             for idx in 0 ..< itemCount {
                 let indexPath = NSIndexPath(forItem: idx, inSection: section)
                 
                 let columnIndex = self.nextColumnIndexForItem(idx, section: section)
                 let xOffset = sectionInsets.left + (itemWidth + self.minimumColumnSpacing) * CGFloat(columnIndex)
-                let yOffset = self.columnHeights[section].objectAtIndex(columnIndex).doubleValue
+                var yOffset = self.columnHeights[section].objectAtIndex(columnIndex).doubleValue
+                yOffset = self.calculateYPaddingForOffset(yOffset)
+                
                 let itemSize = self.delegate?.collectionView(self.collectionView!, layout: self, sizeForItemAtIndexPath: indexPath)
                 var itemHeight : CGFloat = 0.0
                 if itemSize?.height > 0 && itemSize?.width > 0 {
                     itemHeight = floor(itemSize!.height*itemWidth/itemSize!.width)
                 }
-
+                
                 attributes = UICollectionViewLayoutAttributes(forCellWithIndexPath: indexPath)
                 attributes.frame = CGRectMake(xOffset, CGFloat(yOffset), itemWidth, itemHeight)
                 itemAttributes.addObject(attributes)
                 self.allItemAttributes.addObject(attributes)
-              
+                
                 if let sectionColumnHeights = self.columnHeights[section] as? NSMutableArray {
                     sectionColumnHeights[columnIndex]=CGRectGetMaxY(attributes.frame) + minimumInteritemSpacing
                 }
+                self.lastYOffset = CGFloat(yOffset)
+
             }
             self.sectionItemAttributes.addObject(itemAttributes)
             
@@ -277,6 +294,17 @@ public class CHTCollectionViewWaterfallLayout : UICollectionViewLayout{
             self.unionRects.addObject(NSValue(CGRect:CGRectUnion(rect1,rect2)))
             idx += 1
         }
+    }
+    
+    private func calculateYPaddingForOffset(currentYOffset: Double) -> Double {
+        let currentYOffsetFloat = CGFloat(currentYOffset)
+        if let _lastYOffset = self.lastYOffset {
+            let difference: CGFloat = currentYOffsetFloat - CGFloat(_lastYOffset)
+            if difference < self.staggerThreshold {
+                return Double(currentYOffsetFloat + self.staggerHeight)
+            }
+        }
+        return Double(currentYOffset)
     }
     
     override public func collectionViewContentSize() -> CGSize{

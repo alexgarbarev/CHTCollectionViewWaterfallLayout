@@ -46,6 +46,7 @@ class ViewController: UIViewController, UICollectionViewDelegate, UICollectionVi
         // Change individual layout attributes for the spacing between cells
         layout.minimumColumnSpacing = 1.0
         layout.minimumInteritemSpacing = 1.0
+        layout.staggerHeight = 60
         
         // Collection view attributes
         self.collectionView.autoresizingMask = [UIViewAutoresizing.FlexibleHeight, UIViewAutoresizing.FlexibleWidth]
