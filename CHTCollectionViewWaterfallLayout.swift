@@ -399,13 +399,15 @@ public class CHTCollectionViewWaterfallLayout : UICollectionViewLayout{
         var index = 0
         var shorestHeight = MAXFLOAT
         guard let sectionColumnHeights = self.columnHeights[section] as? NSArray else { return index }
-        sectionColumnHeights.enumerateObjects({(object : AnyObject!, idx : NSInteger,pointer :UnsafeMutablePointer<ObjCBool>) in
-            guard let height = object.floatValue else { return }
-            if (height<shorestHeight){
-                shorestHeight = height
-                index = idx
+        sectionColumnHeights.enumerateObjects({ (value, idx, stop) in
+            if let object = value as? AnyObject {
+                guard let height = object.floatValue else { return }
+                if (height<shorestHeight){
+                    shorestHeight = height
+                    index = idx
+                }
             }
-            } as! (Any, Int, UnsafeMutablePointer<ObjCBool>) -> Void)
+        })
         return index
     }
     
@@ -414,18 +416,20 @@ public class CHTCollectionViewWaterfallLayout : UICollectionViewLayout{
      *
      *  @return index for the longest column
      */
-    
     func longestColumnIndexInSection (section: NSInteger) -> NSInteger {
         var index = 0
         var longestHeight:CGFloat = 0.0
         guard let sectionColumnHeights = self.columnHeights[section] as? NSArray else { return index }
-        sectionColumnHeights.enumerateObjects({(object : AnyObject!, idx : NSInteger,pointer :UnsafeMutablePointer<ObjCBool>) in
-            let height = CGFloat(object.floatValue)
-            if (height > longestHeight){
-                longestHeight = height
-                index = idx
+        
+        sectionColumnHeights.enumerateObjects({ (value, idx, stop) in
+            if let object = value as? AnyObject {
+                let height = CGFloat(object.floatValue)
+                if (height > longestHeight){
+                    longestHeight = height
+                    index = idx
+                }
             }
-            } as! (Any, Int, UnsafeMutablePointer<ObjCBool>) -> Void)
+        })
         return index
     }
     
