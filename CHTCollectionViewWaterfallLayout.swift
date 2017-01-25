@@ -324,8 +324,8 @@ public class CHTCollectionViewWaterfallLayout : UICollectionViewLayout{
         
         var contentSize = self.collectionView!.bounds.size as CGSize
         guard let sectionColumnHeights = self.columnHeights.lastObject as? NSArray else { return CGSize.zero }
-        guard let height = sectionColumnHeights.firstObject as? NSInteger else { return CGSize.zero }
-        contentSize.height = CGFloat(height)
+        guard let height = sectionColumnHeights.firstObject as? NSNumber else { return CGSize.zero }
+        contentSize.height = CGFloat(height.intValue)
         return contentSize
     }
     
@@ -373,9 +373,10 @@ public class CHTCollectionViewWaterfallLayout : UICollectionViewLayout{
         }
         for i in begin ..< end {
             let attr = self.allItemAttributes.object(at: i) as! UICollectionViewLayoutAttributes
-            if rect.intersects(attr.frame) {
+            //Commented because it crash the app inside UICollectionView layout, while insertion.
+//            if rect.intersects(attr.frame) {
                 attrs.add(attr)
-            }
+//            }
         }
         
         return NSArray(array: attrs) as? [UICollectionViewLayoutAttributes]
