@@ -324,8 +324,15 @@ public class CHTCollectionViewWaterfallLayout : UICollectionViewLayout{
         
         var contentSize = self.collectionView!.bounds.size as CGSize
         guard let sectionColumnHeights = self.columnHeights.lastObject as? NSArray else { return CGSize.zero }
-        guard let height = sectionColumnHeights.firstObject as? NSNumber else { return CGSize.zero }
-        contentSize.height = CGFloat(height.intValue)
+
+        var maxHeight = 0
+        for heightNumber in sectionColumnHeights {
+            let height = (heightNumber as! NSNumber).intValue
+            if height > maxHeight {
+                maxHeight = height
+            }
+        }
+        contentSize.height = CGFloat(maxHeight)
         return contentSize
     }
     
